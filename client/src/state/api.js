@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const paperApi = createApi({
   reducerPath: 'paperApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000' }),
+  baseQuery: fetchBaseQuery({ baseUrl: process.env.REACT_APP_API_BASE_URL }),
   endpoints: (builder) => ({
     generatePaper: builder.mutation({
       query: (paperDetails) => ({
