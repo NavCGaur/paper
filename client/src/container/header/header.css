@@ -1,0 +1,295 @@
+.gpt4__header {
+    display: flex;
+    padding: 0rem 6.5rem;
+    min-height: 80vh;
+
+}
+
+
+
+.gpt4__header-content{
+    flex:1;
+    display: flex;
+    align-items: flex-start;
+    margin-top: 2rem;
+    flex-direction: column;
+    height: 80vh;
+    margin-right: 2rem;
+    padding: 0rem 2rem;
+
+}
+
+.gpt4__header-content h1{
+    font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 2.5rem;
+    line-height: 75px;
+    letter-spacing: -0.04cm;
+
+}
+
+.gradient__text-reactword{
+    font-size: 48px;
+
+}
+
+
+
+.gpt4__header-content p{
+    font-family: var(--font-family);
+    font-weight: normal;
+    font-size: 20px;
+    line-height: 27px;
+    color: var(--color-text);
+
+    margin-top: 1.5rem;
+
+    
+}
+
+.gpt4__header-content__input {
+    width: 100%;
+    margin: 2rem 0 1rem;
+
+    display: flex;
+}
+
+.gpt4__header-content__input input{
+    flex:2;
+    width: 100%;
+    min-height: 50px;
+    background: var(--color-footer);
+    border-radius: 5px 0px 0px 5px;
+    font-family: var(--font-family);
+    font-size: 20px;
+    line-height: 27px;
+    color: #fff;
+    border: 2px solid var(--color-footer);
+    padding: 0 1rem;
+    border-radius: 5px 0px 0px 5px;
+    outline: none;
+
+}
+
+.gpt4__header-content__input button {
+    flex: 0.6;
+    width: 100%;
+    min-height: 50px;
+    background: #FF4820;
+    border-radius: 5px 0px 0px 5px;
+    font-family: var(--font-family);
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 27px;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    padding: 0 1rem;
+    
+}
+
+.gpt4__header-content__people{
+width: 100%;
+display: flex;
+justify-content: flex-start;
+align-items: center;
+
+margin-top: 2rem;
+}
+
+.gpt4__header-content__people img{
+width: 181.79px;
+height: 38px;
+
+}
+
+.gpt4__header-image{
+    
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;    
+}
+
+.gpt4__header-imageContainer{
+    width: 70%;
+    height: 70%;
+}
+
+.gpt4__header-image img{
+    width: 70%;
+    height: 70%;
+    margin-top: 4rem;
+
+}
+
+.gpt4__header-features{
+    display: flex;
+    flex-direction: row;
+}
+
+.gpt4__header-features img{
+    width: 3.5rem;
+    padding-top: 0.5rem;
+}
+
+.gpt4__header-content__paperButton{
+    color: #fff;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.gpt4__header-block{
+    padding: 1rem;
+    margin-left: 1rem;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+
+.gpt4__header-features-cta{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 4rem;
+}
+
+
+
+.gpt4__header-features-cta p{
+    font-size: 1.5rem;
+    font-family: var(--font-family);
+}
+
+.gpt4__cta-button{
+    border-radius: 5px;
+    width: 18rem;
+    height: 4rem;
+    background: #FF4820;
+    font-family: var(--font-family);
+    font-weight: bold;
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    padding: 0 1rem;
+
+}
+
+.gpt4__header-features:last-of-type{
+    margin-top: 1rem;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+
+@media screen and (max-width: 1050px) {
+    .gpt4__header{
+        flex-direction: column;
+    }
+    
+    .gpt4__header-content{
+        margin: 0 0 3rem;
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .gpt4__header h1{
+        font-size: 48px;
+        line-height: 60px;    }
+    
+    .gpt4__header p{
+        font-size: 16px;
+        line-height: 24px;    }
+    .gpt4__header-content__people{
+        flex-direction: column;
+    }
+
+    .gpt4__header-content__people p{
+        margin: 0;    }
+
+    .gpt4__header-content__input input,
+    .gpt4__header-content__input button{
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .gpt4__header-features:last-of-type{
+        margin-top: 0rem;
+        text-align: justify;
+       
+    }
+    .gpt4__header-features:last-of-type p{
+       font-weight: 600;
+       font-size: 1rem;
+       
+    }
+
+
+    .gpt4__header-imageContainer img{
+        display: none;
+        margin: 0;
+    }
+
+    .gpt4__header-image{
+        margin: 0;
+    }
+
+    .gpt4__header-features-cta{
+        
+        margin-top: 0rem;
+    }
+    
+
+}
+
+
+@media screen and (max-width: 490px) {
+    .gpt4__header{
+        padding:0;
+
+    }
+   
+    .gpt4__header h1{
+        font-size: 36px;
+        line-height: 48px;    }
+    
+    .gpt4__header p{
+        font-size: 14px;
+        line-height: 24px;    }
+ 
+
+    .gpt4__header-content__input input,
+    .gpt4__header-content__input button{
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
