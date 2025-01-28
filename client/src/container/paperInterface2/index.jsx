@@ -17,7 +17,6 @@ function PaperInterface2() {
 
   const [numSections, setNumSections] = useState(1);
   const [generatePaper, { isLoading }] = useGeneratePaperMutation();
-  const [questionPaper, setQuestionPaper] = useState(null);
   const [filePath, setFilePath] = useState(null);
   const [availableChapters, setAvailableChapters] = useState([]);
 
@@ -31,7 +30,6 @@ function PaperInterface2() {
     try {
       const result = await generatePaper(updatedFormData).unwrap();
       console.log('API Response:', result); // Debugging the response
-      setQuestionPaper(result.paper);
       setFilePath(result.filePath); // Assuming filePath is returned from the backend
     } catch (error) {
       console.error('Failed to generate paper:', error);

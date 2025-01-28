@@ -12,7 +12,6 @@ function PaperInterface() {
   });
 
   const [generatePaper, { isLoading }] = useGeneratePaperMutation();
-  const [questionPaper, setQuestionPaper] = useState(null);
   const [filePath, setFilePath] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -22,7 +21,6 @@ function PaperInterface() {
 
       console.log('API Response:', result); // Debugging the response
 
-      setQuestionPaper(result.paper);
       setFilePath(result.filePath); // Assuming filePath is returned from the backend
     } catch (error) {
       console.error('Failed to generate paper:', error);

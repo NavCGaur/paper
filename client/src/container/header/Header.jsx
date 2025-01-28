@@ -17,22 +17,22 @@ const Header = () => {
           <h1 className='gradient__text'>Unlimited Free Question Papers </h1>
 
           <div className='gpt4__header-features'>
-            <img src={tickmark} ></img>
+            <img src={tickmark} alt=''></img>
             <p>Zero Typing.  </p>
           </div>
 
           <div className='gpt4__header-features'>
-            <img src={tickmark} ></img>
+            <img src={tickmark} alt=''></img>
             <p>Downloadable in Word Format.  </p>
           </div>
          
           <div className='gpt4__header-features'>
-            <img src={tickmark} ></img>
+            <img src={tickmark} alt=''></img>
             <p>Time Saver - Instantly generates question papers.  </p>
           </div>
 
           <div className='gpt4__header-features'>
-            <img src={tickmark} ></img>
+            <img src={tickmark} alt=''></img>
             <p>Create Question Paper for Classes 1 to 12, CBSE, All Subjects.  </p>
           </div>         
 
