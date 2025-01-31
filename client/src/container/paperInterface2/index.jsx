@@ -13,8 +13,10 @@ function PaperInterface2({ onClose }) {
     numQuestions: '',
     sections: [],
     chapters: [],
-    
+
   });
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const [numSections, setNumSections] = useState(1);
   const [generatePaper, { isLoading }] = useGeneratePaperMutation();
@@ -142,11 +144,11 @@ function PaperInterface2({ onClose }) {
               required
               MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
             >
-              {Array.from({ length: 12 }, (_, i) => (
-                <MenuItem key={i + 1} value={i + 1}>
-                  {i + 1}
+             {Array.from({ length: 8 }, (_, i) => (
+                <MenuItem key={i + 5} value={i + 5}>
+                {i + 5}
                 </MenuItem>
-              ))}
+            ))}
             </Select>
           </FormControl>
         </div>
@@ -171,7 +173,8 @@ function PaperInterface2({ onClose }) {
         </div>
 
         <div className="container__paperInterface2-form-group">
-          <FormControl fullWidth margin="normal">
+          <FormControl fullWidth margin="normal"     
+          >
             <InputLabel>Chapters</InputLabel>
             <Select
               name="chapters"
@@ -179,9 +182,18 @@ function PaperInterface2({ onClose }) {
               onChange={handleChaptersChange}
               multiple
               required
+             
             >
               {availableChapters.map((chapter, index) => (
-                <MenuItem key={index} value={chapter}>
+                <MenuItem key={index} value={chapter} 
+                sx={{ // Inline styles
+                    '&.Mui-selected': { // Target the selected state
+                      backgroundColor: '#C4E4FD', // Darker blue
+                    },
+                    '&.Mui-selected:hover': { // Hover on selected
+                      backgroundColor: '#C4E4FD',
+                    },
+                 }}>
                   {chapter}
                 </MenuItem>
               ))}
