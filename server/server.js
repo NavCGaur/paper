@@ -20,6 +20,13 @@ app.use(cors({
   origin: 'https://examai-beta.vercel.app'
 }));
 
+// Handle preflight requests
+app.options('*', cors({
+  origin: 'https://examai-beta.vercel.app',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Firebase configuration
 const firebaseConfig = {
