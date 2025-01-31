@@ -5,6 +5,7 @@ const { Schema } = mongoose;
 const QuestionSchema = new Schema({
   class: { type: Number, required: true }, // Class level (5-12)
   subject: { type: String, required: true }, // Subject name (e.g., Biology)
+  subSubject:{type:String},
   chapter: { type: String, required: true }, // Chapter name
   type: { 
     type: String, 
@@ -22,7 +23,7 @@ const QuestionSchema = new Schema({
   correctAnswer: { type: String, enum: ['A', 'B', 'C', 'D'] }, // Correct answer for AR (A: Both true, R explains A, etc.)
 
   // Case-Based Questions
-  caseDetails: {
+  caseDetails: {  
     subQuestions: [
       {
         text: { type: String },

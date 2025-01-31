@@ -603,6 +603,8 @@ app.get('/question-summary', async (req, res) => {
 
 const insertData = async () => {
   try {
+    console.log("Inserting Questions");
+
     await QuestionPaperData.insertMany(questionData); // Insert new questions
     console.log("Questions inserted successfully");
   } catch (error) {
@@ -613,6 +615,21 @@ const insertData = async () => {
 // Run the insert function
 //insertData();
 
+const deleteData = async()=>{
+  try{
+    console.log("Deleting Questions");
+    await QuestionPaperData.deleteMany({ "class": 700}); 
+    console.log("Questions deleted successfully");
+
+
+  } catch (error) {
+    console.error("Error inserting data:", error);
+  }
+  
+}
+
+// Run the Delete function
+//deleteData();
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
