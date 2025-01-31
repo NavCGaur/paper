@@ -16,6 +16,7 @@
     "express": "^4.21.2",
     "firebase": "^11.2.0",
     "fs": "^0.0.1-security",
+    "mongoose": "^8.9.5",
     "openai": "^4.77.3"
   },
   "type": "module"

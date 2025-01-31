@@ -1,4 +1,12 @@
 export const chaptersData = {
+    "6.Science":["Materials Around Us",
+        "Temperature and its Measurement",
+        "A Journey through States of Water",
+        "Methods of Separation in Everyday Life",
+        "Living Creatures: Exploring their Characteristics",
+        "Nature’s Treasures",
+        "Beyond Earth"
+    ],
     "11.Biology": [
         "All Chapters",
         "The Living World",

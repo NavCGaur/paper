@@ -1,0 +1,22 @@
+.summary-container {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 1000px;
+    color: white;
+  }
+  
+  .summary-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .summary-table {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  @media (max-width: 768px) {
+    .summary-container {
+      width: 100%;
+    }
+  }
+  

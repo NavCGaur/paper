@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
-import { AlignmentType, Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType, VerticalAlign, TabStopType } from "docx";
+import { AlignmentType, Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType, VerticalAlign } from "docx";
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -39,8 +39,6 @@ await mongoose.connect(mongoUri);
 
 // Function to format fetched questions into a Word document
 async function formatQuestionPaper(title, instructions, sections) {
-  console.log("inside formatQuestionPaper",)
-
   let questionNumber = 1;
   const doc = new Document({
     sections: [{
@@ -98,17 +96,17 @@ async function formatQuestionPaper(title, instructions, sections) {
                     })
                   );
                 });
-              } else if (q.type === "caseBased" && q.caseDetails?.subQuestions) {
+              } else if (q.type === "caseBased" && q.questions) {
 
-                const caseMarks = q.caseDetails.subQuestions.reduce(
+                const caseMarks = q.questions.reduce(
                   (total, caseQuestion) => total + (caseQuestion.marks || 0),
                   0
                 );
                 q.marks = caseMarks;
-            
-                console.log("q.marks", q.marks);
-            
-                q.caseDetails.subQuestions.forEach((caseQuestion, index) => {
+
+                console.log("q.marks",q.marks)
+              
+                q.questions.forEach((caseQuestion, index) => {
                   questionParagraphs.push(
                     new Paragraph({
                       children: [
@@ -119,7 +117,7 @@ async function formatQuestionPaper(title, instructions, sections) {
                     })
                   );
                 });
-            }
+              }
 
 
               return new TableRow({
@@ -150,148 +148,178 @@ async function formatQuestionPaper(title, instructions, sections) {
   return Packer.toBuffer(doc);
 }
 
-const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
-
 app.post('/generate-paper', async (req, res) => {
+  
+  const { 
+    className, 
+    subject, 
+    difficulty, 
+    numQuestions, 
+    sections, 
+    chapters,
+    totalMarks
+  } = req.body;  
+  try {
 
-  console.log("inside generate-paper",)
+    const hasSectionE = sections.length > 4 && sections[4].numQuestions !== undefined;
 
-    const { 
-        className, 
-        subject, 
-        difficulty, 
-        numQuestions, 
-        sections, 
-        chapters, 
-        totalMarks 
-    } = req.body;
+    console.log("sections",sections)
+    // Current prompt has some formatting issues. Here's the improved version:
+          const prompt = `
+          Generate a Class ${className} CBSE ${subject} question paper with the following specifications:
+          Difficulty Level: ${difficulty}
+          Selected Chapters: ${chapters.join(', ')}
+
+          **Question Distribution:**
+          ${sections.map((section, index) =>
+              `Section ${String.fromCharCode(65 + index)} (${section.markPerQuestion} mark${section.markPerQuestion > 1 ? 's' : ''} each) - ${section.numQuestions} questions`
+          ).join('\n')}
+
+          ${
+            hasSectionE
+                ? `**Case-Based Section Requirements:**
+        - Section E should contain exactly ${sections[4].numQuestions} case-based question(s)
+        - Each case-based question should include:
+            - A case description of at least 90 words (MANDATORY) relevant to the selected chapters
+            - Exactly 5 sub-questions worth 1 mark each`
+                : ''
+        }
+
+          Expected JSON Structure:
+          {
+              "sectionA": [
+                  {
+                      "type": "mcq",
+                      "text": "Question text here",
+                      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                      "marks": 1
+                  }
+              ],
+              "sectionB": [
+                  {
+                      "type": "shortAnswer",
+                      "text": "Question text here",
+                      "marks": 2
+                  }
+              ],
+              "sectionC": [
+                  {
+                      "type": "mediumAnswer",
+                      "text": "Question text here",
+                      "marks": 3
+                  }
+              ],
+              "sectionD": [
+                  {
+                      "type": "longAnswer",
+                      "text": "Question text here",
+                      "marks": 4
+                  }
+              ],
+              "sectionE": [
+                  {
+                      "type": "caseBased",
+                      "text": "Case description - must be of minimum 90 words",
+                      "questions": [
+                          { "text": "Sub-question 1", "marks": 1 },
+                          { "text": "Sub-question 2", "marks": 1 },
+                          { "text": "Sub-question 3", "marks": 1 },
+                          { "text": "Sub-question 4", "marks": 1 },
+                          { "text": "Sub-question 5", "marks": 1 }
+                      ],
+
+                  }
+              ]
+          }
+          `
+        const tokenCount = prompt.split(/\s+/).length; 
+        console.log('Token count:', tokenCount);
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3000,
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    console.log("responseContent", responseContent)
+    let questions;
+    try {
+      questions = JSON.parse(responseContent);
+    } catch (parseError) {
+      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        questions = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error("Invalid JSON format in ChatGPT response.");
+      }
+    }
+
+    const title = `HALF YEARLY EXAMINATION - ${subject.toUpperCase()} CLASS ${className}`;
+    const instructions = [
+      `Maximum Marks:  ${totalMarks}`,
+      "Time: 3 Hours",  
+      "All questions are compulsory.",
+    ];
+    const buffer = await formatQuestionPaper(title, instructions, 
+      sections.map((section, index) => ({
+        title: `SECTION ${String.fromCharCode(65 + index)} (${section.markPerQuestion} Mark Each)`, 
+        questions: questions[`section${String.fromCharCode(65 + index)}`]
+      }))
+    );
+
+    const fileName = `QuestionPaper_Class${className}_${subject}.docx`;
+    const storageRef = ref(storage, `questionPapers/${fileName}`);
+    const metadata = { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
 
     try {
-        const questionTypes = ["mcq", "shortAnswer", "mediumAnswer", "longAnswer", "caseBased"];
+        await uploadBytes(storageRef, buffer, metadata);
+        const downloadURL = await getDownloadURL(storageRef);
 
-        // Assign default types if not provided
-        const processedSections = sections.map((section, index) => ({
-            ...section,
-            type: section.type || questionTypes[index] || "mcq"
-        }));
 
-        // Fetching questions from MongoDB
-        const fetchedQuestions = await QuestionPaperData.find({
-            class:className,
-            subject,
-            chapter: { $in: chapters }
+        console.log('File uploaded successfully. URL:', downloadURL);
+
+
+        const paperRef = doc(db, 'questionPapers', `${className}-${subject}`);
+
+
+    try {
+        await setDoc(paperRef, {
+          className,
+          subject,
+          difficulty,
+          numQuestions,
+          downloadURL,
+          createdAt: new Date().toISOString(),
         });
+        console.log('Document successfully written:', paperRef.path);
+        res.json({ filePath: downloadURL });
 
-        if (!fetchedQuestions || fetchedQuestions.length === 0) {
-            return res.status(404).json({ error: "No questions found for the selected criteria." });
-        }
 
-        // Organizing questions by type and chapter
-        const questionsByTypeAndChapter = {};
+      } catch (err) {
+        console.error('Error writing document:', err.message);
+      }
+      } catch (err) {
+        console.error('Error uploading file to storage:', err.message);
+        throw err; // Rethrow to ensure proper error handling
+      }
 
-        fetchedQuestions.forEach(question => {
-            if (!questionsByTypeAndChapter[question.type]) {
-                questionsByTypeAndChapter[question.type] = {};
-            }
-            if (!questionsByTypeAndChapter[question.type][question.chapter]) {
-                questionsByTypeAndChapter[question.type][question.chapter] = [];
-            }
-            questionsByTypeAndChapter[question.type][question.chapter].push(question);
-        });
+    
 
-        // Structure for question paper
-        const questionPaper = {};
-
-        processedSections.forEach((section, index) => {
-            const sectionKey = `section${String.fromCharCode(65 + index)}`;
-            const type = section.type;
-            const requiredQuestions = section.numQuestions;
-
-            let selectedQuestions = [];
-
-            if (questionsByTypeAndChapter[type]) {
-                const chapterWiseQuestions = questionsByTypeAndChapter[type];
-                const availableChapters = Object.keys(chapterWiseQuestions);
-
-                // Step 1: Ensure at least one question per chapter
-                let remainingSlots = requiredQuestions;
-                availableChapters.forEach(chapter => {
-                    if (remainingSlots > 0 && chapterWiseQuestions[chapter].length > 0) {
-                        shuffleArray(chapterWiseQuestions[chapter]); // Randomize chapter questions
-                        selectedQuestions.push(chapterWiseQuestions[chapter].pop());
-                        remainingSlots--;
-                    }
-                });
-
-                // Step 2: Fill remaining slots randomly from all chapters
-                if (remainingSlots > 0) {
-                    let allRemainingQuestions = availableChapters.flatMap(chapter => chapterWiseQuestions[chapter]);
-                    shuffleArray(allRemainingQuestions); // Randomize
-                    selectedQuestions.push(...allRemainingQuestions.slice(0, remainingSlots));
-                }
-            }
-
-            questionPaper[sectionKey] = selectedQuestions;
-        });
-
-        // Generating the Word document
-        const title = `HALF YEARLY EXAMINATION - ${subject.toUpperCase()} CLASS ${className}`;
-        const instructions = [
-            `Maximum Marks: ${totalMarks}`,
-            "Time: 3 Hours",
-            "All questions are compulsory."
-        ];
-
-        const buffer = await formatQuestionPaper(title, instructions, 
-            processedSections.map((section, index) => ({
-                title: `SECTION ${String.fromCharCode(65 + index)} (${section.markPerQuestion} Mark Each)`,
-                questions: questionPaper[`section${String.fromCharCode(65 + index)}`]
-            }))
-        );
-
-        // Uploading to Firebase
-        const fileName = `QuestionPaper_Class${className}_${subject}.docx`;
-        const storageRef = ref(storage, `questionPapers/${fileName}`);
-        const metadata = { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
-
-        try {
-            await uploadBytes(storageRef, buffer, metadata);
-            const downloadURL = await getDownloadURL(storageRef);
-
-            console.log('File uploaded successfully. URL:', downloadURL);
-
-            // Storing document details in Firestore
-            const paperRef = doc(db, 'questionPapers', `${className}-${subject}`);
-            await setDoc(paperRef, {
-                className,
-                subject,
-                difficulty,
-                numQuestions,
-                downloadURL,
-                createdAt: new Date().toISOString(),
-            });
-
-            console.log('Document successfully written:', paperRef.path);
-            res.json({ filePath: downloadURL });
-
-        } catch (err) {
-            console.error('Error uploading file to storage:', err.message);
-            throw err;
-        }
-
-    } catch (error) {
-        console.error('Error:', error.message);
-        res.status(500).json({ error: error.message });
-    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 
 
 
+
+
 app.post('/generate-paper3', async (req, res) => {
-
-  console.log("inside generate-paper-3",)
-
   const {
     className,
     subject,
@@ -310,72 +338,96 @@ app.post('/generate-paper3', async (req, res) => {
     chapters,
     totalMarks)
 
-    const questionTypes = ["mcq", "shortAnswer", "mediumAnswer", "longAnswer", "caseBased"];
+    const prompt = `
+          Generate a Class ${className} CBSE ${subject} question paper with the following specifications:
+          Difficulty Level: ${difficulty}
+          Selected Chapters: ${chapters.join(', ')}
 
-        // Assign default types if not provided
-        const processedSections = sections.map((section, index) => ({
-            ...section,
-            type: section.type || questionTypes[index] || "mcq"
-        }));
+          **Question Distribution:**
+          ${sections.map((section, index) =>
+              `Section ${String.fromCharCode(65 + index)} (${section.markPerQuestion} mark${section.markPerQuestion > 1 ? 's' : ''} each) - ${section.numQuestions} questions`
+          ).join('\n')}
 
-        // Fetching questions from MongoDB
-        const fetchedQuestions = await QuestionPaperData.find({
-            class:className,
-            subject,
-            chapter: { $in: chapters }
-        });
+          **Case-Based Section Requirements:**
+          - Section E should contain exactly ${sections[4].numQuestions}  case-based question(s)
+          - Each caseBased question should include:
+            - A case description of at least 90 words (MANDATORY) relevant to the selected chapters
+            - Exactly 5 sub-questions worth 1 mark each
 
-        if (!fetchedQuestions || fetchedQuestions.length === 0) {
-            return res.status(404).json({ error: "No questions found for the selected criteria." });
-        }
+          Expected JSON Structure:
+          {
+              "sectionA": [
+                  {
+                      "type": "mcq",
+                      "text": "Question text here",
+                      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                      "marks": 1
+                  }
+              ],
+              "sectionB": [
+                  {
+                      "type": "shortAnswer",
+                      "text": "Question text here",
+                      "marks": 2
+                  }
+              ],
+              "sectionC": [
+                  {
+                      "type": "mediumAnswer",
+                      "text": "Question text here",
+                      "marks": 3
+                  }
+              ],
+              "sectionD": [
+                  {
+                      "type": "longAnswer",
+                      "text": "Question text here",
+                      "marks": 4
+                  }
+              ],
+              "sectionE": [
+                  {
+                      "type": "caseBased",
+                      "text": "Case description - must be of minimum 90 words",
+                      "questions": [
+                          { "text": "Sub-question 1", "marks": 1 },
+                          { "text": "Sub-question 2", "marks": 1 },
+                          { "text": "Sub-question 3", "marks": 1 },
+                          { "text": "Sub-question 4", "marks": 1 },
+                          { "text": "Sub-question 5", "marks": 1 }
+                      ],
+                       "number of case based Question": ${sections[4].numQuestions},
 
-        // Organizing questions by type and chapter
-        const questionsByTypeAndChapter = {};
+                  }
+              ]
+          }
+          `
+  
 
-        fetchedQuestions.forEach(question => {
-            if (!questionsByTypeAndChapter[question.type]) {
-                questionsByTypeAndChapter[question.type] = {};
-            }
-            if (!questionsByTypeAndChapter[question.type][question.chapter]) {
-                questionsByTypeAndChapter[question.type][question.chapter] = [];
-            }
-            questionsByTypeAndChapter[question.type][question.chapter].push(question);
-        });
 
-        // Structure for question paper
-        const questionPaper = {};
+    // Generate questions using ChatGPT
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3000,
+    });
 
-        processedSections.forEach((section, index) => {
-            const sectionKey = `section${String.fromCharCode(65 + index)}`;
-            const type = section.type;
-            const requiredQuestions = section.numQuestions;
+    const responseContent = completion.choices[0].message.content;
 
-            let selectedQuestions = [];
-
-            if (questionsByTypeAndChapter[type]) {
-                const chapterWiseQuestions = questionsByTypeAndChapter[type];
-                const availableChapters = Object.keys(chapterWiseQuestions);
-
-                // Step 1: Ensure at least one question per chapter
-                let remainingSlots = requiredQuestions;
-                availableChapters.forEach(chapter => {
-                    if (remainingSlots > 0 && chapterWiseQuestions[chapter].length > 0) {
-                        shuffleArray(chapterWiseQuestions[chapter]); // Randomize chapter questions
-                        selectedQuestions.push(chapterWiseQuestions[chapter].pop());
-                        remainingSlots--;
-                    }
-                });
-
-                // Step 2: Fill remaining slots randomly from all chapters
-                if (remainingSlots > 0) {
-                    let allRemainingQuestions = availableChapters.flatMap(chapter => chapterWiseQuestions[chapter]);
-                    shuffleArray(allRemainingQuestions); // Randomize
-                    selectedQuestions.push(...allRemainingQuestions.slice(0, remainingSlots));
-                }
-            }
-
-            questionPaper[sectionKey] = selectedQuestions;
-        });
+    console.log("responseContent",responseContent)
+    let questions;
+    try {
+      questions = JSON.parse(responseContent);
+    } catch (parseError) {
+      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        questions = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error("Invalid JSON format in ChatGPT response.");
+      }
+    }
 
     // Format the question paper
     const title = `P. M SHRI KENDRIYA VIDYALAYA SAURKHAND\n\nPERIODIC TEST 2\n\nSUBJECT- ${subject.toUpperCase()}\n\nCLASS - ${className}`;
@@ -385,13 +437,10 @@ app.post('/generate-paper3', async (req, res) => {
       "All questions are compulsory."
     ];
 
-    const buffer = await formatQuestionPaper3(title, instructions, 
-      processedSections.map((section, index) => ({
-          title: `SECTION ${String.fromCharCode(65 + index)} (${section.markPerQuestion} Mark Each)`,
-          questions: questionPaper[`section${String.fromCharCode(65 + index)}`]
-      }))
-  );
-
+    const buffer = await formatQuestionPaper3(title, instructions, sections.map((section, index) => ({
+      title: `SECTION ${String.fromCharCode(65 + index)} - (${section.markPerQuestion} Marks Each)`,
+      questions: questions[`section${String.fromCharCode(65 + index)}`]
+    })));
 
     // Upload the file to Firebase Storage
     const fileName = `QuestionPaper_Class${className}_${subject}.docx`;
@@ -420,8 +469,6 @@ app.post('/generate-paper3', async (req, res) => {
 });
 
 async function formatQuestionPaper3(title, instructions, sections) {
-
-  console.log("inside formatQuestionPaper3",)
   let questionNumber = 1;
 
   const doc = new Document({
@@ -509,46 +556,37 @@ async function formatQuestionPaper3(title, instructions, sections) {
               return [questionPara, ...optionParas];
             }
 
-            if (q.type === "caseBased" && q.caseDetails?.subQuestions) {
+            if (q.type === "caseBased") {
               const caseParagraphs = [
-                  new Paragraph({
-                      children: [
-                          new TextRun({ 
-                              text: `${questionNumber++}. Case Study:\n`,
-                              bold: true,
-                              size: 22,
-                              font: "Palanquin Dark"
-                          }),
-                          new TextRun({ 
-                              text: q.text,
-                              size: 22,
-                              font: "Palanquin Dark"
-                          })
-                      ],
-                      spacing: { after: 200 }
-                  }),
-                  ...q.caseDetails.subQuestions.map((subQ, index) => new Paragraph({
-                      children: [
-                          new TextRun({ 
-                              text: `${String.fromCharCode(97 + index)}) ${subQ.text}`,
-                              size: 22,
-                              font: "Palanquin Dark"
-                          }),
-
-                          new TextRun({ 
-                            text: ` (${subQ.marks} mark${subQ.marks > 1 ? "s" : ""})`, 
-                            size: 22,
-                            font: "Palanquin Dark",
-                        })
-                      ],
-                      spacing: { after: 200 },
-                      tabStops: [{ position: 7000, type: TabStopType.RIGHT }]
-
-                  }))
+                new Paragraph({
+                  children: [
+                    new TextRun({ 
+                      text: `${questionNumber++}. Case Study:\n`,
+                      bold: true,
+                      size: 22,
+                      font: "Palanquin Dark"
+                    }),
+                    new TextRun({ 
+                      text: q.text,
+                      size: 22,
+                      font: "Palanquin Dark"
+                    })
+                  ],
+                  spacing: { after: 200 }
+                }),
+                ...q.questions.map((subQ, index) => new Paragraph({
+                  children: [
+                    new TextRun({ 
+                      text: `${String.fromCharCode(97 + index)}) ${subQ.text}`,
+                      size: 22,
+                      font: "Palanquin Dark"
+                    })
+                  ],
+                  spacing: { after: 200 }
+                }))
               ];
               return caseParagraphs;
-          }
-          
+            }
 
             // Regular questions (short/long answer)
             return new Paragraph({

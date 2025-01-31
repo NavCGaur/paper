@@ -1,27 +1,45 @@
 /* src/styles.css */
-.container {
+.container__paperInterface2 {
     max-width: 1200px;
-    margin: 0 auto;
+    height: 90vh; /* Set height to 100vh for full viewport height */
     padding: 2rem;
+    margin: 0 .5rem;
     font-family: Arial, sans-serif;
+    overflow-y: auto; /* Make the container scrollable */
   }
   
-  h1 {
-    text-align: center;
-    color: #fff;
-    margin-bottom: 2rem;
-  }
+
   
-  .form {
+  .container__paperInterface2-form {
     background-color: #f5f5f5;
-    padding: 2rem;
+    padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     margin: 0 auto;
   }
+ 
+.paperInterface2__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    color: #fff;
+  }
   
-  .form-group {
+  .paperInterface2__header h3 {
+    margin: 0;
+  }
+  
+  .paperInterface2__close-icon {
+    position: absolute !important;
+    right:-45%;
+    color: #fff;
+  }
+
+  
+  .container__paperInterface2-form-group {
     margin-bottom: 1.5rem;
   }
   
@@ -74,12 +92,7 @@
     margin-top: 1rem;
   }
   
-  .question {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-  }
+
 
   .paperInterface2__form-group{
     display: flex;
@@ -89,11 +102,15 @@
     width: 100%;
   }
 
+  .paperInterface2__form-group p{
+    font-size: 0.8rem;
+  }
+
   .paperInterface2__form-group h4{
     font-weight: 400;
   }
 
-  .form-summary{
+  .container__paperInterface2-form-summary{
     font-weight: 700;
     display: flex;
     justify-content: space-between;
@@ -101,11 +118,15 @@
   }
   
   @media (max-width: 768px) {
-    .container {
+    .container__paperInterface2 {
       padding: 1rem;
+      max-width: 96%;
     }
     
-    .form {
+    .form__paperInterface2 {
       padding: 1rem;
     }
+    .small-text-field {
+        width: 40%; 
+      }
   }

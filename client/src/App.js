@@ -1,9 +1,8 @@
 import './App.css';
-import PaperInterface from './container/paperInterface/index';
-import PaperInterface2 from './container/paperInterface2';
 import Navbar from './container/navbar/Navbar'
 import Header from './container/header/Header'
-import PaperInterface3 from './container/paperInterface3';
+import FormatChoser from './container/formatChoser';
+import QuestionSummary from './container/QuestionSummary';
 
 function App() {
   return (
@@ -11,11 +10,8 @@ function App() {
          <div className='gradient__bg'>
           <Navbar />
           <Header />
-          <PaperInterface />
-          <PaperInterface2 />
-          <PaperInterface3 />
-
-
+          <FormatChoser />
+          <QuestionSummary />
         </div>
     </div>
   );

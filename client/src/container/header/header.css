@@ -175,6 +175,9 @@ height: 38px;
     cursor: pointer;
     outline: none;
     padding: 0 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
 }
 

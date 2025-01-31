@@ -49,9 +49,9 @@ const Header = () => {
             <div className='gpt4__header-imageContainer'>  
               <img src={ai} alt='ai' />
               <div className='gpt4__header-features-cta'>
-                <button className="gpt4__cta-button" type='button'>
+                <a href='#formatChoser' className="gpt4__cta-button" >
                   Make Your Paper
-                </button>  
+                </a>  
               </div>
             </div>            
           </div>

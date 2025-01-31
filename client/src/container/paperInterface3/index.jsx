@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useGeneratePaper3Mutation } from '../../state/api';
-import { TextField, Button, CircularProgress, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { TextField, Button, CircularProgress, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { chaptersData } from "./data";
 import './index.css';
 
-function PaperInterface3() {
+function PaperInterface3({ onClose }) {
   const [formData, setFormData] = useState({
     className: '',
     subject: '',
@@ -104,10 +105,31 @@ function PaperInterface3() {
   const totalPaperMarks = formData.sections.reduce((sum, section) => sum + parseInt(section.totalMarks || 0, 10), 0);
 
   return (
-    <div className="container">
-      <h1>CBSE Question Paper Generator</h1>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
+    <div className="container__paperInterface3">
+       <div className="paperInterface3__header">
+        <h3>Fill Paper Details</h3>
+        <IconButton 
+          onClick={onClose}
+          aria-label="close"
+          className="paperInterface3__close-icon"
+          size="large"
+          sx={{ 
+            color: 'white',
+            '&:hover': {
+              color: '#e0e0e0'
+            },
+            '& .MuiSvgIcon-root': {
+              fontSize: '2rem'  
+            },
+            padding: '12px',   
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </div>
+
+      <form onSubmit={handleSubmit} className="container__paperInterface3-form">
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Class</InputLabel>
             <Select
@@ -126,7 +148,7 @@ function PaperInterface3() {
           </FormControl>
         </div>
 
-        <div className="form-group">
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Subject</InputLabel>
             <Select
@@ -145,7 +167,7 @@ function PaperInterface3() {
           </FormControl>
         </div>
 
-        <div className="form-group">
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Chapters</InputLabel>
             <Select
@@ -164,7 +186,10 @@ function PaperInterface3() {
           </FormControl>
         </div>
 
-        <div className="form-group">
+
+        
+        {/*      
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Difficulty Level</InputLabel>
             <Select
@@ -180,7 +205,7 @@ function PaperInterface3() {
           </FormControl>
         </div>
 
-        <div className="form-group">
+        <div className="container__paperInterface3-form-group">
           <TextField
             label="Number of Questions"
             type="number"
@@ -190,10 +215,13 @@ function PaperInterface3() {
             required
             fullWidth
             margin="normal"
+            size="small" 
           />
         </div>
 
-        <div className="form-group">
+        */}
+
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Number of Sections</InputLabel>
             <Select
@@ -210,26 +238,28 @@ function PaperInterface3() {
         </div>
 
         {formData.sections.map((section, index) => (
-          <div key={index} className="paperInterface2__form-group">
-            <h4>{section.sectionName}</h4>
+          <div key={index} className="paperInterface3__form-group">
+            <p>{section.sectionName}</p>
             <TextField
-              label="Number of Questions"
+              label="No. of Ques"
               type="number"
               value={section.numQuestions}
               onChange={(e) => handleSectionChange(index, 'numQuestions', e.target.value)}
               margin="normal"
               size="small"
+              className="small-text-field"
             />
-            <p>Total Marks: {section.totalMarks}</p>
+            <p>Marks: {section.totalMarks}</p>
           </div>
         ))}
 
-        <div className="form-summary">
+        <div className="container__paperInterface3-form-summary">
           <p>Total Questions: {totalQuestions}</p>
           <p>Total Marks: {totalPaperMarks}</p>
         </div>
 
         <Button
+         
           type="submit"
           variant="contained"
           color="primary"
@@ -238,19 +268,24 @@ function PaperInterface3() {
         >
           {isLoading ? <CircularProgress size={24} /> : 'Generate Paper'}
         </Button>
-      </form>
 
-      {filePath && (
+
+        {filePath && (
         <Button
           variant="contained"
           color="secondary"
           href={filePath}
           target="_blank"
           rel="noopener noreferrer"
+          fullWidth
+          style={{ marginTop: '1rem' }} 
         >
           Download File
         </Button>
       )}
+      </form>
+
+      
     </div>
   );
 }
