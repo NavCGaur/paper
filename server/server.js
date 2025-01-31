@@ -7,22 +7,27 @@ import { AlignmentType, Document, Packer, Paragraph, Table, TableCell, TableRow,
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
-import {  mongoUri } from "./config.js";
 import {questionData} from "./data/Questions.js"
 import QuestionPaperData from "./models/Question.js"; // Your Mongoose model
 
-
 dotenv.config();
 
+
+const mongoUri = process.env.MONGO_URI;
+const frontendUrl = process.env.FRONTEND_URL;
+
+
 const app = express();
+
 app.use(express.json());
+
 app.use(cors({
-  origin: 'https://examai-beta.vercel.app'
+  origin: frontendUrl
 }));
 
 // Handle preflight requests
 app.options('*', cors({
-  origin: 'https://examai-beta.vercel.app',
+  origin: frontendUrl,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -43,6 +48,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
+
 
 await mongoose.connect(mongoUri);
 
