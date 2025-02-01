@@ -6,6 +6,7 @@ import FormatOne from '../../assets/formatone.png'
 import FormatTwo from '../../assets/formattwo.png'
 import PaperInterface2 from '../paperInterface2';
 import PaperInterface3 from '../paperInterface3';
+import {trackEvent} from '../../analytics/analytics'
 
 
 
