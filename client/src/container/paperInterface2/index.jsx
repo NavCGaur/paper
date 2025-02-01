@@ -1,45 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGeneratePaperMutation } from '../../state/api';
-import { TextField, Button, CircularProgress, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
+import { TextField, Button, LinearProgress, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chaptersData } from "./data";
 import './index.css';
 
+// Firebase imports
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+
+// Firebase configuration (replace with your Firebase project config)
+const firebaseConfig = {
+    apiKey: "AIzaSyAMpeDEUisFVOnVog6jyeQlAKccb_kn9b8",
+    authDomain: "paper-f4198.firebaseapp.com",
+    projectId: "paper-f4198",
+    storageBucket: "paper-f4198.firebasestorage.app",
+    messagingSenderId: "619998441166",
+    appId: "1:619998441166:web:55c0eaff2f3eab2cb26a9f",
+    measurementId: "G-F7JMZJT1X7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+
+
 function PaperInterface2({ onClose }) {
-  const [formData, setFormData] = useState({
-    className: '',
-    subject: '',
-    difficulty: 'medium',
-    numQuestions: '',
-    sections: [],
-    chapters: [],
 
-  });
-
-
+   const initialFormState = {
+      className: '',
+      subject: '',
+      difficulty: 'easy',
+      numQuestions: '',
+      sections: [],
+      chapters: [],
+    };
+   
+  const [formData, setFormData] = useState(initialFormState);
   const [numSections, setNumSections] = useState(1);
   const [generatePaper, { isLoading }] = useGeneratePaperMutation();
   const [filePath, setFilePath] = useState(null);
   const [availableChapters, setAvailableChapters] = useState([]);
+  const [buttonStatus, setButtonStatus] = useState('initial'); // 'initial', 'loading', 'downloaded', 'ready'
+  
+
+  const resetForm = () => {
+    setFormData(initialFormState);
+    setNumSections(1);
+    setAvailableChapters([]);
+    setFilePath(null);
+    setButtonStatus('initial');
+  };
 
   const handleSubmit = async (e) => {
 
-    console.log( process.env.REACT_APP_API_BASE_URL)
 
-    console.log(formData);
     e.preventDefault();
 
     const updatedFormData = { ...formData, totalMarks: totalPaperMarks };
 
-    console.log(updatedFormData); // Check the final data being sent
     try {
       const result = await generatePaper(updatedFormData).unwrap();
-      console.log('API Response:', result); // Debugging the response
       setFilePath(result.filePath); // Assuming filePath is returned from the backend
     } catch (error) {
       console.error('Failed to generate paper:', error);
     }
   };
+
+  useEffect(() => {
+      if (isLoading) {
+        setButtonStatus('loading');
+      }
+    }, [isLoading]);
+  
+    useEffect(() => {
+      if (filePath) {
+        const downloadFile = async () => {
+          try {
+            // Use Firebase SDK to get the download URL
+            const fileRef = ref(storage, filePath);
+            const url = await getDownloadURL(fileRef);
+  
+            // Trigger the download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filePath.split('/').pop(); // Extract the file name from the path
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+  
+            setButtonStatus('downloaded');
+            
+            // After 6 seconds, change to 'ready' state
+            setTimeout(() => {
+              setButtonStatus('ready');
+            }, 6000);
+            } catch (error) {
+            console.error('Failed to download file:', error);
+            setButtonStatus('initial');
+  
+          }
+        };
+  
+        downloadFile();
+      }
+    }, [filePath]);
+  
+    const getButtonContent = () => {
+      switch (buttonStatus) {
+        case 'loading':
+          return (
+            <div style={{ textAlign: 'center', marginTop: '5px' }}>
+              <LinearProgress 
+                sx={{ 
+                  flexGrow: 1, 
+                  backgroundColor: 'lightgrey',
+                  mb: 1
+                }}
+              />
+              <p style={{ color: '#000000', margin: 0 }}>
+                Your Paper is being generated, please wait.
+              </p>
+            </div>
+          );
+        case 'downloaded':
+          return (
+            <span style={{ color: '#fff' }}>
+              Paper Downloaded, Check Download folder
+            </span>
+          );
+        case 'ready':
+          return 'Generate another paper';
+        default:
+          return 'Generate Paper';
+      }
+    };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -109,13 +205,13 @@ function PaperInterface2({ onClose }) {
   const totalPaperMarks = formData.sections.reduce((sum, section) => sum + parseInt(section.totalMarks || 0, 10), 0);
 
   return (
-    <div className="container__paperInterface2">
-       <div className="paperInterface2__header">
+    <div className="container__paperInterface3"  style={{ position: 'relative' }}>
+      <div className="paperInterface3__header">
         <h3>Fill Paper Details</h3>
         <IconButton 
           onClick={onClose}
           aria-label="close"
-          className="paperInterface2__close-icon"
+          className="paperInterface3__close-icon"
           size="large"
           sx={{ 
             color: 'white',
@@ -132,8 +228,9 @@ function PaperInterface2({ onClose }) {
         </IconButton>
       </div>
 
-      <form onSubmit={handleSubmit} className="container__paperInterface2-form">
-        <div className="container__paperInterface2-form-group">
+
+      <form onSubmit={handleSubmit} className="container__paperInterface3-form">
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Class</InputLabel>
             <Select
@@ -143,16 +240,17 @@ function PaperInterface2({ onClose }) {
               required
               MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
             >
-             {Array.from({ length: 8 }, (_, i) => (
+                           required
+              {Array.from({ length: 8 }, (_, i) => (
                 <MenuItem key={i + 5} value={i + 5}>
                 {i + 5}
                 </MenuItem>
-            ))}
+              ))}
             </Select>
           </FormControl>
         </div>
 
-        <div className="container__paperInterface2-form-group">
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Subject</InputLabel>
             <Select
@@ -171,9 +269,8 @@ function PaperInterface2({ onClose }) {
           </FormControl>
         </div>
 
-        <div className="container__paperInterface2-form-group">
-          <FormControl fullWidth margin="normal"     
-          >
+        <div className="container__paperInterface3-form-group">
+          <FormControl fullWidth margin="normal">
             <InputLabel>Chapters</InputLabel>
             <Select
               name="chapters"
@@ -181,18 +278,17 @@ function PaperInterface2({ onClose }) {
               onChange={handleChaptersChange}
               multiple
               required
-             
             >
               {availableChapters.map((chapter, index) => (
-                <MenuItem key={index} value={chapter} 
+                <MenuItem key={index} value={chapter}
                 sx={{ // Inline styles
-                    '&.Mui-selected': { // Target the selected state
-                      backgroundColor: '#C4E4FD', // Darker blue
-                    },
-                    '&.Mui-selected:hover': { // Hover on selected
-                      backgroundColor: '#C4E4FD',
-                    },
-                 }}>
+                      '&.Mui-selected': { // Target the selected state
+                        backgroundColor: '#C4E4FD', // Darker blue
+                      },
+                      '&.Mui-selected:hover': { // Hover on selected
+                        backgroundColor: '#C4E4FD',
+                      },
+                   }}>
                   {chapter}
                 </MenuItem>
               ))}
@@ -200,11 +296,10 @@ function PaperInterface2({ onClose }) {
           </FormControl>
         </div>
 
+
         
-
-        {/*
-
-            <div className="container__paperInterface2-form-group">
+        {/*      
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Difficulty Level</InputLabel>
             <Select
@@ -218,10 +313,9 @@ function PaperInterface2({ onClose }) {
               <MenuItem value="hard">Hard</MenuItem>
             </Select>
           </FormControl>
-        </div>            
+        </div>
 
-
-            <div className="container__paperInterface2-form-group">
+        <div className="container__paperInterface3-form-group">
           <TextField
             label="Number of Questions"
             type="number"
@@ -234,10 +328,10 @@ function PaperInterface2({ onClose }) {
             size="small" 
           />
         </div>
-  
-        
+
         */}
-        <div className="container__paperInterface2-form-group">
+
+        <div className="container__paperInterface3-form-group">
           <FormControl fullWidth margin="normal">
             <InputLabel>Number of Sections</InputLabel>
             <Select
@@ -254,7 +348,7 @@ function PaperInterface2({ onClose }) {
         </div>
 
         {formData.sections.map((section, index) => (
-          <div key={index} className="paperInterface2__form-group">
+          <div key={index} className="paperInterface3__form-group">
             <p>{section.sectionName}</p>
             <TextField
               label="No. of Ques"
@@ -269,41 +363,34 @@ function PaperInterface2({ onClose }) {
           </div>
         ))}
 
-        <div className="container__paperInterface2-form-summary">
+        <div className="container__paperInterface3-form-summary">
           <p>Total Questions: {totalQuestions}</p>
           <p>Total Marks: {totalPaperMarks}</p>
         </div>
 
         <Button
-         
-          type="submit"
+          type={buttonStatus === 'ready' ? 'button' : 'submit'}
           variant="contained"
           color="primary"
           disabled={isLoading}
           fullWidth
-        >
-          {isLoading ? <CircularProgress size={24} /> : 'Generate Paper'}
+          onClick={buttonStatus === 'ready' ? resetForm : undefined}
+          sx={{
+            backgroundColor: isLoading ? 'white' : undefined,
+            color: isLoading ? 'black' : undefined,
+            '&:hover': {
+              backgroundColor: buttonStatus === 'ready' ? '#1565c0' : undefined
+            }
+          }}
+          >
+          {getButtonContent()}
         </Button>
-
-
-        {filePath && (
-        <Button
-          variant="contained"
-          color="secondary"
-          href={filePath}
-          target="_blank"
-          rel="noopener noreferrer"
-          fullWidth
-          style={{ marginTop: '1rem' }} 
-        >
-          Download File
-        </Button>
-      )}
       </form>
 
       
     </div>
   );
 }
+
 
 export default PaperInterface2;

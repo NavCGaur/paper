@@ -238,6 +238,7 @@ height: 38px;
 
     .gpt4__header-image{
         margin: 0;
+        margin-top: -2rem;
     }
 
     .gpt4__header-features-cta{

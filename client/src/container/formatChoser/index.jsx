@@ -16,6 +16,8 @@ const FormatChoser = () => {
     const [modalContent, setModalContent] = useState(null);
   
     const handleOpenModal = (content) => {
+
+      trackEvent('User', 'Clicked FormatChoser Button', 'FormatChoser Button');
       setModalContent(content);
       setOpenModal(true);
     };

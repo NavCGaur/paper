@@ -1,16 +1,22 @@
-import './App.css';
-import Navbar from './container/navbar/Navbar'
-import Header from './container/header/Header'
-import FormatChoser from './container/formatChoser';
+// App.js
+import React, { useEffect } from 'react';
+import { trackPageView } from './analytics';
+import Navbar from './Navbar';
+import Header from './Header';
+import FormatChoser from './FormatChoser';
 
 function App() {
+  useEffect(() => {
+    trackPageView();
+  }, []);
+
   return (
-    <div >
-         <div className='gradient__bg'>
-          <Navbar />
-          <Header />
-          <FormatChoser />
-        </div>
+    <div>
+      <div className='gradient__bg'>
+        <Navbar />
+        <Header />
+        <FormatChoser />
+      </div>
     </div>
   );
 }

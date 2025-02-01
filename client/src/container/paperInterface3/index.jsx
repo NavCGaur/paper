@@ -1,41 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGeneratePaper3Mutation } from '../../state/api';
-import { TextField, Button, CircularProgress, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
+import { TextField, Button, LinearProgress, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chaptersData } from "./data";
 import './index.css';
 
+// Firebase imports
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+
+// Firebase configuration (replace with your Firebase project config)
+const firebaseConfig = {
+    apiKey: "AIzaSyAMpeDEUisFVOnVog6jyeQlAKccb_kn9b8",
+    authDomain: "paper-f4198.firebaseapp.com",
+    projectId: "paper-f4198",
+    storageBucket: "paper-f4198.firebasestorage.app",
+    messagingSenderId: "619998441166",
+    appId: "1:619998441166:web:55c0eaff2f3eab2cb26a9f",
+    measurementId: "G-F7JMZJT1X7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+
 function PaperInterface3({ onClose }) {
-  const [formData, setFormData] = useState({
+
+  const initialFormState = {
     className: '',
     subject: '',
-    difficulty: 'medium',
+    difficulty: 'easy',
     numQuestions: '',
     sections: [],
     chapters: [],
-    
-  });
-
+  };
+ 
+  const [formData, setFormData] = useState(initialFormState);
   const [numSections, setNumSections] = useState(1);
   const [generatePaper3, { isLoading }] = useGeneratePaper3Mutation();
   const [filePath, setFilePath] = useState(null);
   const [availableChapters, setAvailableChapters] = useState([]);
+  const [buttonStatus, setButtonStatus] = useState('initial'); // 'initial', 'loading', 'downloaded', 'ready'
+
+  const resetForm = () => {
+    setFormData(initialFormState);
+    setNumSections(1);
+    setAvailableChapters([]);
+    setFilePath(null);
+    setButtonStatus('initial');
+  };
+
 
   const handleSubmit = async (e) => {
-    console.log(formData);
     e.preventDefault();
 
     const updatedFormData = { ...formData, totalMarks: totalPaperMarks };
 
-    console.log(updatedFormData); // Check the final data being sent
     try {
       const result = await generatePaper3(updatedFormData).unwrap();
-      console.log('API Response:', result); // Debugging the response
       setFilePath(result.filePath); // Assuming filePath is returned from the backend
     } catch (error) {
       console.error('Failed to generate paper:', error);
     }
   };
+
+
+  useEffect(() => {
+    if (isLoading) {
+      setButtonStatus('loading');
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (filePath) {
+      const downloadFile = async () => {
+        try {
+          // Use Firebase SDK to get the download URL
+          const fileRef = ref(storage, filePath);
+          const url = await getDownloadURL(fileRef);
+
+          // Trigger the download
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filePath.split('/').pop(); // Extract the file name from the path
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+
+          setButtonStatus('downloaded');
+          
+          // After 6 seconds, change to 'ready' state
+          setTimeout(() => {
+            setButtonStatus('ready');
+          }, 6000);
+          } catch (error) {
+          console.error('Failed to download file:', error);
+          setButtonStatus('initial');
+
+        }
+      };
+
+      downloadFile();
+    }
+  }, [filePath]);
+
+  const getButtonContent = () => {
+    switch (buttonStatus) {
+      case 'loading':
+        return (
+          <div style={{ textAlign: 'center', marginTop: '5px' }}>
+            <LinearProgress 
+              sx={{ 
+                flexGrow: 1, 
+                backgroundColor: 'lightgrey',
+                mb: 1
+              }}
+            />
+            <p style={{ color: '#000000', margin: 0 }}>
+              Your Paper is being generated, please wait.
+            </p>
+          </div>
+        );
+      case 'downloaded':
+        return (
+          <span style={{ color: '#fff' }}>
+            Paper Downloaded, Check Download folder
+          </span>
+        );
+      case 'ready':
+        return 'Generate another paper';
+      default:
+        return 'Generate Paper';
+    }
+  };
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,8 +205,8 @@ function PaperInterface3({ onClose }) {
   const totalPaperMarks = formData.sections.reduce((sum, section) => sum + parseInt(section.totalMarks || 0, 10), 0);
 
   return (
-    <div className="container__paperInterface3">
-       <div className="paperInterface3__header">
+    <div className="container__paperInterface3"  style={{ position: 'relative' }}>
+      <div className="paperInterface3__header">
         <h3>Fill Paper Details</h3>
         <IconButton 
           onClick={onClose}
@@ -127,6 +227,7 @@ function PaperInterface3({ onClose }) {
           <CloseIcon />
         </IconButton>
       </div>
+
 
       <form onSubmit={handleSubmit} className="container__paperInterface3-form">
         <div className="container__paperInterface3-form-group">
@@ -268,30 +369,22 @@ function PaperInterface3({ onClose }) {
         </div>
 
         <Button
-         
-          type="submit"
+          type={buttonStatus === 'ready' ? 'button' : 'submit'}
           variant="contained"
           color="primary"
           disabled={isLoading}
           fullWidth
-        >
-          {isLoading ? <CircularProgress size={24} /> : 'Generate Paper'}
+          onClick={buttonStatus === 'ready' ? resetForm : undefined}
+          sx={{
+            backgroundColor: isLoading ? 'white' : undefined,
+            color: isLoading ? 'black' : undefined,
+            '&:hover': {
+              backgroundColor: buttonStatus === 'ready' ? '#1565c0' : undefined
+            }
+          }}
+          >
+          {getButtonContent()}
         </Button>
-
-
-        {filePath && (
-        <Button
-          variant="contained"
-          color="secondary"
-          href={filePath}
-          target="_blank"
-          rel="noopener noreferrer"
-          fullWidth
-          style={{ marginTop: '1rem' }} 
-        >
-          Download File
-        </Button>
-      )}
       </form>
 
       
