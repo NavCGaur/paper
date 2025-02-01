@@ -8,6 +8,7 @@ export const chaptersData = {
       "Beyond Earth"
   ],
   "7.Social Science": [
+    "                            GEOGRAPHY".replace(/ /g, '\u00A0'),
   "Environment",
   "Inside Our Earth",
   "Our Changing Earth",
@@ -18,6 +19,7 @@ export const chaptersData = {
   "Human Environment Interactions – The Tropical and the Subtropical Region",
   "Life in the Temperate Grasslands",
   "Life in the Deserts",
+  "                              HISTORY".replace(/ /g, '\u00A0'),
   "Tracing Changes Through A Thousand Years",
   "New Kings and Kingdoms",
   "The Delhi Sultans",
@@ -26,6 +28,7 @@ export const chaptersData = {
   "Devotional Paths to the Divine",
   "The Making of Regional Cultures",
   "Eighteenth-Century Political Formations",
+  "                              CIVICS".replace(/ /g, '\u00A0'),
   "On Equality",
   "Role of the Government in Health",
   "How the State Government Works",

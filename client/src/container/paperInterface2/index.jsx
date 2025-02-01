@@ -16,7 +16,6 @@ function PaperInterface2({ onClose }) {
 
   });
 
-  const [isOpen, setIsOpen] = useState(false);
 
   const [numSections, setNumSections] = useState(1);
   const [generatePaper, { isLoading }] = useGeneratePaperMutation();
