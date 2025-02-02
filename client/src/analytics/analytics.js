@@ -2,7 +2,7 @@
 import ReactGA from 'react-ga';
 
 // Initialize Google Analytics with your tracking ID
-ReactGA.initialize('YOUR_GOOGLE_ANALYTICS_TRACKING_ID');
+ReactGA.initialize("G-F7JMZJT1X7");
 
 // Track page view
 export const trackPageView = () => {

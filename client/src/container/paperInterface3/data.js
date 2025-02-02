@@ -7,6 +7,48 @@ export const chaptersData = {
       "Nature’s Treasures",
       "Beyond Earth"
   ],
+
+  "6.Social Science": [
+
+    "                            GEOGRAPHY".replace(/ /g, '\u00A0'),
+
+    "The Earth in the Solar System",
+    "Globe: Latitudes and Longitudes",
+    "Motions of the Earth",
+    "Maps",
+    "Major Domains of the Earth",
+    "Major Landforms of the Earth",
+    "Our Country – India",
+    "India: Climate, Vegetation, and Wildlife",
+    "                              HISTORY".replace(/ /g, '\u00A0'),
+
+      "What, Where, How, and When?",
+      "From Hunting–Gathering to Growing Food",
+      "In the Earliest Cities",
+      "What Books and Burials Tell Us",
+      "Kingdoms, Kings, and an Early Republic",
+      "New Questions and Ideas",
+      "Ashoka, The Emperor Who Gave Up War",
+      "Vital Villages, Thriving Towns",
+      "Traders, Kings, and Pilgrims",
+      "New Empires and Kingdoms",
+      "Buildings, Paintings, and Books",
+     
+      "                              CIVICS".replace(/ /g, '\u00A0'),
+
+      "Understanding Diversity",
+      "Diversity and Discrimination",
+      "What is Government?",
+      "Key Elements of a Democratic Government",
+      "Panchayati Raj",
+      "Rural Administration",
+      "Urban Administration",
+      "Rural Livelihoods",
+      "Urban Livelihoods",
+    ],
+
+
+
   "7.Social Science": [
     "                            GEOGRAPHY".replace(/ /g, '\u00A0'),
   "Environment",

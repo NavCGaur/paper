@@ -2,13 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from "mongoose";
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
+import fs from 'fs';
 import { AlignmentType, Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType, VerticalAlign, TabStopType } from "docx";
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import {questionData} from "./data/Questions.js"
 import QuestionPaperData from "./models/Question.js"; // Your Mongoose model
+import autoGenerateQuestions from './autoGenerateQuestions.js';
+
 
 dotenv.config();
 
@@ -646,6 +648,32 @@ const deleteData = async()=>{
 
 // Run the Delete function
 //deleteData();
+
+const backupDatabase = async()=> {
+  try {
+    
+
+    const data = await QuestionPaperData.find({});
+    const filePath = `./backups/QuestionPaperData.json`;
+
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      console.log(`Backup of QuestionPaperData saved to ${filePath}`);
+    
+
+    console.log('Database backup complete');
+  } catch (error) {
+    console.error('Error backing up database:', error);
+  } finally {
+    await mongoose.disconnect();
+    console.log('Connection closed');
+  }
+}
+
+//backupDatabase();
+
+
+autoGenerateQuestions();
+
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
