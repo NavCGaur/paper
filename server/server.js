@@ -631,7 +631,7 @@ const insertData = async () => {
 };
 
 // Run the insert function
-insertData();
+//insertData();
 
 const deleteData = async()=>{
   try{
@@ -672,7 +672,7 @@ const backupDatabase = async()=> {
 //backupDatabase();
 
 
-//autoGenerateQuestions();
+autoGenerateQuestions();
 
 
 const port = process.env.PORT || 5000;

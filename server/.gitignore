@@ -21,7 +21,8 @@ node_modules
 config.js
 questions.json
 casequestions.json
-
+class9ScienceQuestions.json
+class10ScienceQuestions.json
 
 npm-debug.log*
 yarn-debug.log*

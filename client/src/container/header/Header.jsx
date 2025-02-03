@@ -1,6 +1,9 @@
 //React import
 import React from 'react';
 
+import {trackEvent} from '../../analytics/analytics'
+
+
 //Style import
 import './header.css';
 
@@ -49,12 +52,17 @@ const Header = () => {
             <div className='gpt4__header-imageContainer'>  
               <img src={ai} alt='ai' />
               <div className='gpt4__header-features-cta'>
-                <a href='#formatChoser' className="gpt4__cta-button" >
+                <a href='#formatChoser' 
+                  className="gpt4__cta-button" 
+                  onClick={() => trackEvent("User", "Clicked Make Your Paper Button", "Make Your Paper Link")}
+
+                  >
                   Make Your Paper
                 </a>  
               </div>
             </div>            
           </div>
+
 
 
       </div>

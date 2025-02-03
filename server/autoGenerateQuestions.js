@@ -3,36 +3,42 @@ import { promises as fs } from "fs";
 import {openaiApiKey} from "./config.js";
 
 
-const OUTPUT_FILE = "casequestions.json";
-const ERROR_FILE = "errors.log";
 const CHAPTERS = [
-  "Nutrition in Plants",
-  "Nutrition in Animals",
-  "Fibre to Fabric",
-  "Heat",
+  "Chemical Reactions and Equations",
   "Acids, Bases, and Salts",
-  "Physical and Chemical Changes",
-  "Weather, Climate, and Adaptations of Animals",
-  "Winds, Storms, and Cyclones",
-  "Soil",
-  "Respiration in Organisms",
-  "Transportation in Animals and Plants",
-  "Reproduction in Plants",
-  "Motion and Time",
-  "Electric Current and its Effects",
-  "Light",
-  "Water: A Precious Resource",
-  "Forests: Our Lifeline",
-  "Wastewater Story"
+  "Metals and Non-metals",
+  "Carbon and Its Compounds",
+  "Periodic Classification of Elements",
+  "Life Processes",
+  "Control and Coordination",
+  "How do Organisms Reproduce?",
+  "Heredity and Evolution",
+  "Light: Reflection and Refraction",
+  "The Human Eye and the Colourful World",
+  "Electricity",
+  "Magnetic Effects of Electric Current",
+  "Sources of Energy",
+  "Our Environment",
+  "Management of Natural Resources"
 ];
+
+
+
+const Class = 10;
+const Subject = "Science";
+  
+const OUTPUT_FILE = `class${Class}${Subject}Questions.json`;
+const ERROR_FILE = "errors.log";
+
+
 
 // Function to generate prompt for MCQs
 const generateMCQPrompt = (chapter) => {
-    return `Provide 3 MCQ type questions from the chapter "${chapter}" of Science of class 7 in the following JSON format:
+    return `Provide 3 MCQ type questions from the chapter "${chapter}" of ${Subject} of class "${Class}" in the following JSON format:
   
     [{
-      "class": 7,
-      "subject": "Science",
+      "class": ${Class},
+      "subject": "${Subject}",
       "chapter": "${chapter}",
       "type": "mcq",
       "difficulty": "easy",
@@ -46,11 +52,11 @@ const generateMCQPrompt = (chapter) => {
   
   // Function to generate prompt for Short Answer questions
   const generateShortAnswerPrompt = (chapter) => {
-    return `Provide 3 Short Answer type questions from the chapter "${chapter}" of Science of class 7 in the following JSON format:
+    return `Provide 3 Short Answer type questions from the chapter "${chapter}" of ${Subject} of class "${Class}" in the following JSON format:
   
     [{
-      "class": 7,
-      "subject": "Science",
+      "class": ${Class},
+      "subject": "${Subject}",
       "chapter": "${chapter}",
       "type": "shortAnswer",
       "difficulty": "easy",
@@ -63,11 +69,11 @@ const generateMCQPrompt = (chapter) => {
 
 
   const generateMediumAnswerPrompt = (chapter) => {
-    return `Provide 2 mediumAnswer type questions from the chapter "${chapter}" of Science of class 7 Strictly in the following JSON format. Do not change class, subject, type, difficulty, marks fields:
+    return `Provide 2 mediumAnswer type questions from the chapter "${chapter}" of ${Subject} of class "${Class}" Strictly in the following JSON format:
   
     [{ 
-      "class": 7,
-      "subject": "Science",
+      "class": ${Class},
+      "subject": "${Subject}",
       "chapter": "${chapter}",
       "type": "mediumAnswer", 
       "difficulty": "easy",
@@ -78,56 +84,56 @@ const generateMCQPrompt = (chapter) => {
   };
 
   const generateLongAnswerPrompt = (chapter) => {
-    return `Provide 1 long Answer type questions from the chapter "${chapter}" of Science of class 7 in the following JSON format:
+    return `Provide 1 long Answer type questions from the chapter "${chapter}" of ${Subject} of class "${Class}" in the following JSON format:
   
     [{ 
-      "class": 7,
-      "subject": "Science",
+      "class": ${Class},
+      "subject": "${Subject}",
       "chapter": "${chapter}",
       "type": "longAnswer", 
       "difficulty": "easy",
-      "text": "Describe the three main layers of the Earth and their characteristics.",
+      "text": "Question Text here",
       "marks": 4,
-      "answer": "The Earth consists of three main layers: crust, mantle, and core. The crust is the outermost layer where we live, made up of solid rocks and minerals, and is thinnest under the oceans and thickest under mountains. The mantle is the middle layer, much thicker than the crust, consisting of semi-solid rocks and minerals at very high temperatures. "
+      "answer": "Answer of question in detail with at least 90 words. "
     }]`;
   };
 
   const generateCaseBasedAnswerPrompt = (chapter) => {
-    return `Provide 1 caseBased Answer type questions from the chapter "${chapter}" of Science of class 7 in the following JSON format:
+    return `Provide 1 caseBased Answer type questions from the chapter "${chapter}" of ${Subject} of class "${Class}" in the following JSON format:
   
-    ["class": 6,
-         "subject": "Science",
+    ["class": ${Class},
+      "subject": "${Subject}",
       "chapter": "${chapter}",
          "type": "caseBased",
          "difficulty": "easy",
-         "text": "During geography class, Maya was studying a globe. Her teacher explained how imaginary lines called latitudes and longitudes help us locate places on Earth. She learned about the equator, prime meridian, and how these lines create a grid system.",
+         "text": "Case description text here  - must be of minimum 90 words.",
          "marks": 5,
          "caseDetails": {
            "subQuestions": [
              {
-               "text": "What is the equator and why is it important?",
+               "text": "Question text here related to case description",
                "marks": 1,
-               "answer": "The equator is the 0° latitude that divides Earth into Northern and Southern hemispheres and helps in determining locations."
+               "answer": "One line answer text here."
              },
              {
-               "text": "What is the prime meridian?",
+               "text": "Question text here related to case description",
                "marks": 1,
-               "answer": "The prime meridian is the 0° longitude passing through Greenwich, London, dividing Earth into Eastern and Western hemispheres."
+               "answer": "One line answer text here."
              },
              {
-               "text": "How do latitudes and longitudes help us?",
+               "text": "Question text here related to case description",
                "marks": 1,
-               "answer": "They form a grid system that helps us locate any point on Earth's surface accurately."
+               "answer": "One line answer text here."
              },
              {
-               "text": "What are the major latitude lines called?",
+               "text": "Question text here related to case description",
                "marks": 1,
-               "answer": "The major latitude lines are the Equator, Tropic of Cancer, Tropic of Capricorn, Arctic Circle, and Antarctic Circle."
+               "answer": "One line answer text here."
              },
              {
-               "text": "How many degrees are there between the poles?",
+               "text": "Question text here related to case description",
                "marks": 1,
-               "answer": "There are 180 degrees between the North and South poles (90°N to 90°S)."
+               "answer": "One line answer text here."
              }
            ]
          }
@@ -271,23 +277,23 @@ const generateMCQPrompt = (chapter) => {
   };
   
   // Main function to run the process
-  //const autoGenerateMCQQuestions = async () => {
-  //  for (const chapter of CHAPTERS) {
-      // Process MCQs
-      //await processResponse(chapter, "MCQ", generateMCQPrompt, isValidMCQ);
-      //console.log("⏳ Waiting 15 seconds before fetching Short Answer questions...");
-      //await new Promise((resolve) => setTimeout(resolve, 15000)); // 15s delay
+  const autoGenerateMCQQuestions = async () => {
+    for (const chapter of CHAPTERS) {
+       //Process MCQs
+      await processResponse(chapter, "MCQ", generateMCQPrompt, isValidMCQ);
+      console.log("⏳ Waiting 15 seconds before fetching next MCQ question...");
+      await new Promise((resolve) => setTimeout(resolve, 15000)); // 15s delay
 
-   // }
-    //console.log("🎉 All chapters processed!");
-  //};
+    }
+    console.log("🎉 All chapters processed!");
+  };
   
   const autoGenerateShortQuestions = async () => {
     for (const chapter of CHAPTERS) {
       // Process Short Answer questions
       await processResponse(chapter, "Short Answer", generateShortAnswerPrompt, isValidShortAnswer);
-      console.log("⏳ Waiting 30 seconds before next chapter...");
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30s delay
+      console.log("⏳ Waiting 15 seconds before next ShortAnswer...");
+      await new Promise((resolve) => setTimeout(resolve, 15000)); // 15s delay
     }
     console.log("🎉 All chapters processed!");
   };
@@ -295,8 +301,8 @@ const generateMCQPrompt = (chapter) => {
   const autoGenerateMediumQuestions = async () => {
     for (const chapter of CHAPTERS) {
       await processResponse(chapter, "Medium Answer", generateMediumAnswerPrompt, isValidMediumAnswer);
-      console.log("⏳ Waiting 60 seconds before next chapter...");
-      await new Promise((resolve) => setTimeout(resolve, 60000)); // 60s delay
+      console.log("⏳ Waiting 30 seconds before next chapter...");
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30s delay
     }
     console.log("🎉 All chapters processed!");
   };
@@ -304,8 +310,8 @@ const generateMCQPrompt = (chapter) => {
   const autoGenerateLongQuestions = async () => {
     for (const chapter of CHAPTERS) {
       await processResponse(chapter, "Long Answer", generateLongAnswerPrompt, isValidLongAnswer);
-      console.log("⏳ Waiting 60 seconds before next chapter...");
-      await new Promise((resolve) => setTimeout(resolve, 60000)); // 60s delay
+      console.log("⏳ Waiting 30 seconds before next chapter...");
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30s delay
     }
     console.log("🎉 All chapters processed!");
   };
@@ -313,18 +319,19 @@ const generateMCQPrompt = (chapter) => {
   const autoGenerateCaseQuestions = async () => {
     for (const chapter of CHAPTERS) {
       await processResponse(chapter, "Case Based Answer", generateCaseBasedAnswerPrompt, isValidCaseBased);
-      console.log("⏳ Waiting 60 seconds before next chapter...");
-      await new Promise((resolve) => setTimeout(resolve, 60000)); // 60s delay
+      console.log("⏳ Waiting 30 seconds before next chapter...");
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30s delay
     }
     console.log("🎉 All chapters processed!");
   };
   
   const autoGenerateQuestions = async () => {
     // Ensure functions run sequentially
+    //await autoGenerateMCQQuestions();
     //await autoGenerateShortQuestions();
-    //await autoGenerateMediumQuestions();
-    //await autoGenerateLongQuestions();
-    await autoGenerateCaseQuestions();
+    await autoGenerateMediumQuestions();
+    await autoGenerateLongQuestions();
+    //await autoGenerateCaseQuestions();
   };
   
   
